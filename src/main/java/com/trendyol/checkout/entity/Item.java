@@ -14,6 +14,8 @@ public abstract class Item {
     private int quantity;
 
     @ManyToOne
-    @JoinColumn(name = "checkoutCart_id")
+    @JoinColumn(name = "checkout_cart_id")
     private CheckoutCart checkoutCart;
+    public static final int ITEM_QUANTITY_PER_INPUT = 10;
+    public static final String QUANTITY_ERROR_PER_INPUT_MESSAGE = "Item quantity exceeds limit.";
 }
