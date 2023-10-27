@@ -10,7 +10,7 @@ import java.util.List;
 @Entity
 @Data
 public class DefaultItem extends Item {
-    public static final String HAS_DIGITAL_ITEM_ERROR_MESSAGE = "Cannot add DigitalItem when cart has DefaultItems.";
+    public static final String HAS_DIGITAL_ITEM_ERROR_MESSAGE = "Cannot add DefaultItem when cart has DigitalItem.";
     @OneToMany(mappedBy = "defaultItem", cascade = CascadeType.ALL)
     private List<VasItem> vasItems;
 }

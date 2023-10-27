@@ -12,6 +12,7 @@ import java.util.List;
 public class CheckoutCart {
     public static final String CART_REFERANCE = "SINGLE_CART";
 
+    public static final String SUCCESS_MESSAGE = "Item added to checkoutCart.";
     public static final double MAX_CART_VALUE = 500000;
     public static final String MAX_CART_VALUE_ERROR_MESSAGE = "Cart value cannot exceed 500000.";
 

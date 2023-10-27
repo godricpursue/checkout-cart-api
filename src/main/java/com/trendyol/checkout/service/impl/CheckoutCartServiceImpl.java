@@ -76,7 +76,7 @@ public class CheckoutCartServiceImpl implements CheckoutCartService {
 
         checkoutCartRepository.save(checkoutCart);
 
-        return new ResponseDTO(ResponseDTO.SUCCESS, "Item added to checkoutCart.");
+        return new ResponseDTO(ResponseDTO.SUCCESS, CheckoutCart.SUCCESS_MESSAGE);
     }
 
 }
