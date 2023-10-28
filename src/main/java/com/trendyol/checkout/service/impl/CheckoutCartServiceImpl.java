@@ -102,7 +102,6 @@ public class CheckoutCartServiceImpl implements CheckoutCartService {
         }
 
         Item item = fetchItemFromCart(checkoutCart, removeItemDTO.getItemId());
-
         if (item == null) {
             return new ResponseDTO(ResponseDTO.FAILED, Item.ITEM_NOT_FOUND_MESSAGE);
         }
@@ -112,6 +111,7 @@ public class CheckoutCartServiceImpl implements CheckoutCartService {
         updateCheckoutCartWithNewItem(checkoutCart);
         return new ResponseDTO(ResponseDTO.SUCCESS, CheckoutCart.REMOVAL_SUCCESS_MESSAGE);
     }
+
 
     // RemoveItem method helper methods
     private Item fetchItemFromCart(CheckoutCart checkoutCart, int itemId) {

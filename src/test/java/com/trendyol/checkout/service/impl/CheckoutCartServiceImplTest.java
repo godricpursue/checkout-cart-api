@@ -2,6 +2,7 @@ package com.trendyol.checkout.service.impl;
 
 import com.trendyol.checkout.dto.AddItemDTO;
 import com.trendyol.checkout.dto.AddVasItemDTO;
+import com.trendyol.checkout.dto.RemoveItemDTO;
 import com.trendyol.checkout.dto.ResponseDTO;
 import com.trendyol.checkout.entity.*;
 import com.trendyol.checkout.mapper.ItemMapper;
@@ -12,9 +13,11 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -23,6 +26,7 @@ import java.util.stream.IntStream;
 import static org.mockito.ArgumentMatchers.any;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.when;
 
 class CheckoutCartServiceImplAddItemTest {
@@ -44,12 +48,7 @@ class CheckoutCartServiceImplAddItemTest {
 
     @Test
     public void testAddItem_DefaultItemSuccess() {
-        AddItemDTO itemDTO = new AddItemDTO();
-        itemDTO.setItemId(10);
-        itemDTO.setCategoryId(3738);
-        itemDTO.setSellerId(2326);
-        itemDTO.setPrice(260);
-        itemDTO.setQuantity(3);
+        AddItemDTO itemDTO = new AddItemDTO(10, 3738, 2326, 260, 3);
 
         ResponseDTO response = checkoutCartService.addItem(itemDTO);
 
@@ -58,12 +57,7 @@ class CheckoutCartServiceImplAddItemTest {
     }
     @Test
     public void testAddItem_DigitalItemSuccess() {
-        AddItemDTO itemDTO = new AddItemDTO();
-        itemDTO.setItemId(10);
-        itemDTO.setCategoryId(DigitalItem.DIGITAL_ITEM_CATEGORY_ID);
-        itemDTO.setSellerId(2326);
-        itemDTO.setPrice(260);
-        itemDTO.setQuantity(3);
+        AddItemDTO itemDTO = new AddItemDTO(10, DigitalItem.DIGITAL_ITEM_CATEGORY_ID, 2326, 260, 3);
 
         ResponseDTO response = checkoutCartService.addItem(itemDTO);
 
@@ -195,7 +189,6 @@ class CheckoutCartServiceImplAddItemTest {
                 .collect(Collectors.toList());
     }
 }
-
 class CheckoutCartServiceImplAddVasItemTest {
     @InjectMocks
     private CheckoutCartServiceImpl checkoutCartService;
@@ -309,6 +302,60 @@ class CheckoutCartServiceImplAddVasItemTest {
 
         assertEquals(ResponseDTO.FAILED, response.isResult());
         assertEquals(DefaultItem.EXCEEDED_VASITEM_MESSAGE, response.getMessage());
+    }
+}
+class CheckoutCartServiceImplRemoveItemTest {
+
+    @InjectMocks
+    private CheckoutCartServiceImpl checkoutCartService;
+
+    @Mock
+    private CheckoutCartRepository checkoutCartRepository;
+
+    @Mock
+    private ItemRepository itemRepository;  // Mock the ItemRepository
+
+    CheckoutCart checkoutCart;
+
+    @BeforeEach
+    public void setup() {
+        MockitoAnnotations.openMocks(this);
+        checkoutCart = new CheckoutCart();
+        AddItemDTO defaultItemDto = new AddItemDTO(10, 1001, 2020, 300, 1);
+        Item item = ItemMapper.dtoToItem(defaultItemDto);
+        checkoutCart.getItems().add(item);
+    }
+
+    @Test
+    public void testRemoveItem_SuccessfulRemoval() {
+        when(checkoutCartRepository.findById(anyString())).thenReturn(Optional.of(checkoutCart));
+        doNothing().when(itemRepository).delete(any(Item.class));
+
+        RemoveItemDTO removeItemDTO = new RemoveItemDTO(10);
+        ResponseDTO response = checkoutCartService.removeItem(removeItemDTO);
+
+        assertEquals(ResponseDTO.SUCCESS, response.isResult());
+        assertEquals(CheckoutCart.REMOVAL_SUCCESS_MESSAGE, response.getMessage());
+    }
+    @Test
+    public void testRemoveItem_NoCart() {
+        Mockito.when(checkoutCartRepository.findOne(Mockito.any())).thenReturn(null);
+
+        ResponseDTO response = checkoutCartService.removeItem(new RemoveItemDTO(10));
+
+        assertEquals(ResponseDTO.FAILED, response.isResult());
+        assertEquals(CheckoutCart.CART_NOT_FOUND_ERROR_MESSAGE, response.getMessage());
+    }
+    @Test
+    public void testRemoveItem_NoItemInCart() {
+        when(checkoutCartRepository.findById(anyString())).thenReturn(Optional.of(checkoutCart));
+        doNothing().when(itemRepository).delete(any(Item.class));
+
+        RemoveItemDTO removeItemDTO = new RemoveItemDTO(11);
+        ResponseDTO response = checkoutCartService.removeItem(removeItemDTO);
+
+        assertEquals(ResponseDTO.FAILED, response.isResult());
+        assertEquals(Item.ITEM_NOT_FOUND_MESSAGE, response.getMessage());
     }
 }
 
