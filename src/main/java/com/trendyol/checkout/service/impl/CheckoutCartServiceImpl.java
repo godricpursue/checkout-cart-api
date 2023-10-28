@@ -67,11 +67,11 @@ public class CheckoutCartServiceImpl implements CheckoutCartService {
     public ResponseDTO addVasItem(AddVasItemDTO vasItemDTO) {
         CheckoutCart checkoutCart = checkoutCartRepository.findById(CheckoutCart.CART_REFERANCE).orElse(null);
         if (checkoutCart == null) {
-            return new ResponseDTO(ResponseDTO.FAILED, "No cart found.");
+            return new ResponseDTO(ResponseDTO.FAILED, CheckoutCart.CART_NOT_FOUND_ERROR_MESSAGE);
         }
 
         if (checkoutCart.getItems().isEmpty()) {
-            return new ResponseDTO(ResponseDTO.FAILED, "No items in the cart to attach a VasItem.");
+            return new ResponseDTO(ResponseDTO.FAILED, VasItem.NO_ITEMS_IN_THE_CART_TO_ATTACH_A_VAS_ITEM_MESSAGE);
         }
 
         Optional<Item> optionalDefaultItem = checkoutCart.getItems().stream()
@@ -79,17 +79,17 @@ public class CheckoutCartServiceImpl implements CheckoutCartService {
                 .findFirst();
 
         if (optionalDefaultItem.isEmpty()) {
-            return new ResponseDTO(ResponseDTO.FAILED, "Default item not found.");
+            return new ResponseDTO(ResponseDTO.FAILED, DefaultItem.DEFAULT_ITEM_NOT_FOUND_MESSAGE);
         }
 
         DefaultItem defaultItem = (DefaultItem) optionalDefaultItem.get();
 
-        if (!Arrays.asList(1001, 3004).contains(defaultItem.getCategoryId())) {
-            return new ResponseDTO(ResponseDTO.FAILED, "VasItem can only be added to Furniture or Electronics.");
+        if (!VasItem.applicableCategories.contains(defaultItem.getCategoryId())) {
+            return new ResponseDTO(ResponseDTO.FAILED, VasItem.VAS_ITEM_CATEGORY_ERROR_MESSAGE);
         }
 
         if (defaultItem.getVasItems().size() >= 3) {
-            return new ResponseDTO(ResponseDTO.FAILED, "A DefaultItem can have a maximum of 3 VasItems.");
+            return new ResponseDTO(ResponseDTO.FAILED, DefaultItem.EXCEEDED_VASITEM_MESSAGE);
         }
 
         VasItem vasItem = new VasItem();
@@ -104,17 +104,17 @@ public class CheckoutCartServiceImpl implements CheckoutCartService {
         vasItem.setCheckoutCart(defaultItem.getCheckoutCart());
 
         if (vasItem.getCategoryId() != 3242 || vasItem.getSellerId() != 5003) {
-            return new ResponseDTO(ResponseDTO.FAILED, "Invalid VasItem details.");
+            return new ResponseDTO(ResponseDTO.FAILED, VasItem.INVALID_VAS_ITEM_DETAILS_MESSAGE);
         }
         if (vasItem.getPrice() > defaultItem.getPrice()) {
-            return new ResponseDTO(ResponseDTO.FAILED, "VasItem price cannot be higher than the DefaultItem price.");
+            return new ResponseDTO(ResponseDTO.FAILED, VasItem.VAS_ITEM_PRICE_HIGHER_THAN_DEFAULT_ITEM_PRICE_MESSAGE);
         }
 
         defaultItem.getVasItems().add(vasItem);
 
         checkoutCartRepository.save(checkoutCart);
 
-        return new ResponseDTO(ResponseDTO.SUCCESS, "VasItem added to DefaultItem.");
+        return new ResponseDTO(ResponseDTO.SUCCESS, VasItem.SUCCESS_MESSAGE);
     }
 
     private void updateCheckoutCartWithNewItem(CheckoutCart checkoutCart, Item item) {

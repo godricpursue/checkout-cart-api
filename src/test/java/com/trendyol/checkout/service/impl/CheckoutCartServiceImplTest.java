@@ -1,17 +1,20 @@
 package com.trendyol.checkout.service.impl;
 
 import com.trendyol.checkout.dto.AddItemDTO;
+import com.trendyol.checkout.dto.AddVasItemDTO;
 import com.trendyol.checkout.dto.ResponseDTO;
 import com.trendyol.checkout.entity.*;
 import com.trendyol.checkout.mapper.ItemMapper;
 import com.trendyol.checkout.repository.CheckoutCartRepository;
 import com.trendyol.checkout.repository.ItemRepository;
+import com.trendyol.checkout.service.CheckoutCartService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -19,9 +22,10 @@ import java.util.stream.IntStream;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.when;
 
-class CheckoutCartServiceImplTest {
+class CheckoutCartServiceImplAddItemTest {
 
     @InjectMocks
     private CheckoutCartServiceImpl checkoutCartService;
@@ -29,8 +33,6 @@ class CheckoutCartServiceImplTest {
     @Mock
     private CheckoutCartRepository checkoutCartRepository;
 
-    @Mock
-    private ItemRepository itemRepository;
 
     @BeforeEach
     public void setup() {
@@ -151,7 +153,7 @@ class CheckoutCartServiceImplTest {
         assertEquals(DigitalItem.QUANTITY_ERROR_PER_INPUT_MESSAGE, response.getMessage());
     }
     @Test
-    public void testAddItem_DefaultCartHasDigitaltItem() {
+    public void testAddItem_DefaultCartHasDigitalItem() {
         CheckoutCart checkoutCart = new CheckoutCart();
         AddItemDTO mockItemDTO = new AddItemDTO(12, DigitalItem.DIGITAL_ITEM_CATEGORY_ID, 1289, 300, 5);
         Item mockItem = ItemMapper.dtoToItem(mockItemDTO);
@@ -178,6 +180,7 @@ class CheckoutCartServiceImplTest {
         assertEquals(ResponseDTO.FAILED, response.isResult());
         assertEquals(DefaultItem.QUANTITY_ERROR_PER_INPUT_MESSAGE, response.getMessage());
     }
+
     private List<Item> createMockItems(int range, int count, int quantity){
         return IntStream.range(range, count)
                 .mapToObj(i -> {
@@ -190,6 +193,121 @@ class CheckoutCartServiceImplTest {
                     return item;
                 })
                 .collect(Collectors.toList());
+    }
+}
+
+class CheckoutCartServiceImplAddVasItemTest {
+    @InjectMocks
+    private CheckoutCartServiceImpl checkoutCartService;
+
+    @Mock
+    private CheckoutCartRepository checkoutCartRepository;
+
+    @Mock
+    private ItemRepository itemRepository;
+
+    private CheckoutCart checkoutCart;
+    @BeforeEach
+    public void setup() {
+        MockitoAnnotations.openMocks(this);
+
+        checkoutCart = new CheckoutCart();
+        AddItemDTO defaultItemDto = new AddItemDTO(10, 1001, 2020, 300, 1);
+        Item defaultItem = ItemMapper.dtoToItem(defaultItemDto);
+        if (defaultItem instanceof DefaultItem) {
+            ((DefaultItem) defaultItem).setVasItems(new ArrayList<>());
+        }
+        checkoutCart.getItems().add(defaultItem);
+    }
+    @Test
+    public void testAddVasItem_Success() {
+        when(checkoutCartRepository.findById(anyString())).thenReturn(Optional.of(checkoutCart));
+
+        AddVasItemDTO vasItemDTO = new AddVasItemDTO(10,3030, VasItem.VAS_ITEM_CATEGORY_ID, VasItem.VAS_ITEM_SELLER_ID, 100, 1);
+        ResponseDTO response = checkoutCartService.addVasItem(vasItemDTO);
+
+        assertEquals(ResponseDTO.SUCCESS, response.isResult());
+        assertEquals(VasItem.SUCCESS_MESSAGE, response.getMessage());
+    }
+    @Test
+    public void testAddVasItem_DefaultItemNotFound() {
+        when(checkoutCartRepository.findById(anyString())).thenReturn(Optional.of(checkoutCart));
+
+        AddVasItemDTO vasItemDTO = new AddVasItemDTO(11,3030, VasItem.VAS_ITEM_CATEGORY_ID, VasItem.VAS_ITEM_SELLER_ID, 100, 1);
+        ResponseDTO response = checkoutCartService.addVasItem(vasItemDTO);
+
+        assertEquals(ResponseDTO.FAILED, response.isResult());
+        assertEquals(DefaultItem.DEFAULT_ITEM_NOT_FOUND_MESSAGE, response.getMessage());
+    }
+    @Test
+    public void testAddVasItem_CartNotFound() {
+        when(checkoutCartRepository.findById(anyString())).thenReturn(Optional.empty());
+
+        AddVasItemDTO addVasItemDTO = new AddVasItemDTO();
+        ResponseDTO response = checkoutCartService.addVasItem(addVasItemDTO);
+
+        assertEquals(ResponseDTO.FAILED, response.isResult());
+        assertEquals(CheckoutCart.CART_NOT_FOUND_ERROR_MESSAGE, response.getMessage());
+    }
+    @Test
+    public void testAddVasItem_EmptyCart() {
+
+        checkoutCart.getItems().clear();
+        when(checkoutCartRepository.findById(anyString())).thenReturn(Optional.of(checkoutCart));
+
+        AddVasItemDTO addVasItemDTO = new AddVasItemDTO();
+        ResponseDTO response = checkoutCartService.addVasItem(addVasItemDTO);
+
+        assertEquals(ResponseDTO.FAILED, response.isResult());
+        assertEquals(VasItem.NO_ITEMS_IN_THE_CART_TO_ATTACH_A_VAS_ITEM_MESSAGE, response.getMessage());
+    }
+    @Test
+    public void testAddVasItem_PriceHigherThanDefaultItem() {
+        when(checkoutCartRepository.findById(anyString())).thenReturn(Optional.of(checkoutCart));
+
+        AddVasItemDTO vasItemDTO = new AddVasItemDTO(10,3030, VasItem.VAS_ITEM_CATEGORY_ID, VasItem.VAS_ITEM_SELLER_ID, 500, 1);
+        ResponseDTO response = checkoutCartService.addVasItem(vasItemDTO);
+
+        assertEquals(ResponseDTO.FAILED, response.isResult());
+        assertEquals(VasItem.VAS_ITEM_PRICE_HIGHER_THAN_DEFAULT_ITEM_PRICE_MESSAGE, response.getMessage());
+    }
+    @Test
+    public void testAddVasItem_InvalidVasItem() {
+        when(checkoutCartRepository.findById(anyString())).thenReturn(Optional.of(checkoutCart));
+
+        AddVasItemDTO vasItemDTO = new AddVasItemDTO(10,3030, 3221, VasItem.VAS_ITEM_SELLER_ID, 100, 1);
+        ResponseDTO response = checkoutCartService.addVasItem(vasItemDTO);
+
+        assertEquals(ResponseDTO.FAILED, response.isResult());
+        assertEquals(VasItem.INVALID_VAS_ITEM_DETAILS_MESSAGE, response.getMessage());
+    }
+    @Test
+    public void testAddVasItem_InvalidAppliedCategory(){
+        when(checkoutCartRepository.findById(anyString())).thenReturn(Optional.of(checkoutCart));
+        AddItemDTO defaultItemDto2 = new AddItemDTO(11, 2002, 5050, 250, 1);
+        Item defaultItem2 = ItemMapper.dtoToItem(defaultItemDto2);
+        checkoutCart.getItems().add(defaultItem2);
+
+        AddVasItemDTO vasItemDTO = new AddVasItemDTO(11,3030, VasItem.VAS_ITEM_CATEGORY_ID, VasItem.VAS_ITEM_SELLER_ID, 100, 1);
+        ResponseDTO response = checkoutCartService.addVasItem(vasItemDTO);
+
+        assertEquals(ResponseDTO.FAILED, response.isResult());
+        assertEquals(VasItem.VAS_ITEM_CATEGORY_ERROR_MESSAGE, response.getMessage());
+    }
+    @Test
+    public void testAddVasItem_ExceededLimit(){
+        when(checkoutCartRepository.findById(anyString())).thenReturn(Optional.of(checkoutCart));
+
+        for (int i = 0; i <= 2; i++) {
+            AddVasItemDTO vasItemDTO = new AddVasItemDTO(10, 3030+i, VasItem.VAS_ITEM_CATEGORY_ID, VasItem.VAS_ITEM_SELLER_ID, 100.0, 1);
+            checkoutCartService.addVasItem(vasItemDTO);
+        }
+
+        AddVasItemDTO vasItemDTO = new AddVasItemDTO(10,2345, VasItem.VAS_ITEM_CATEGORY_ID, VasItem.VAS_ITEM_SELLER_ID, 100, 1);
+        ResponseDTO response = checkoutCartService.addVasItem(vasItemDTO);
+
+        assertEquals(ResponseDTO.FAILED, response.isResult());
+        assertEquals(DefaultItem.EXCEEDED_VASITEM_MESSAGE, response.getMessage());
     }
 }
 
