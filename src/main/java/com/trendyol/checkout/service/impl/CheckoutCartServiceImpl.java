@@ -1,10 +1,8 @@
 package com.trendyol.checkout.service.impl;
 
-import com.trendyol.checkout.dto.AddItemDTO;
-import com.trendyol.checkout.dto.AddVasItemDTO;
-import com.trendyol.checkout.dto.RemoveItemDTO;
-import com.trendyol.checkout.dto.ResponseDTO;
+import com.trendyol.checkout.dto.*;
 import com.trendyol.checkout.entity.*;
+import com.trendyol.checkout.mapper.CartMapper;
 import com.trendyol.checkout.mapper.ItemMapper;
 import com.trendyol.checkout.mapper.VasItemMapper;
 import com.trendyol.checkout.model.Promotion;
@@ -130,6 +128,17 @@ public class CheckoutCartServiceImpl implements CheckoutCartService {
 
         return new ResponseDTO(ResponseDTO.SUCCESS, CheckoutCart.RESET_SUCCESS_MESSAGE);
     }
+    @Override
+    public CartResponseDTO displayCart() {
+        CheckoutCart checkoutCart = getCheckoutCart(false);
+        if (checkoutCart == null) {
+            return new CartResponseDTO(ResponseDTO.FAILED, null);
+        }
+
+        CartDetailsDTO cartDetailsDTO = CartMapper.cartToDTO(checkoutCart);
+        return new CartResponseDTO(ResponseDTO.SUCCESS, cartDetailsDTO);
+    }
+
 
 
     // RemoveItem method helper methods

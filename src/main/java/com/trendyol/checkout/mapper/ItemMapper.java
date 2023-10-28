@@ -2,9 +2,14 @@ package com.trendyol.checkout.mapper;
 
 
 import com.trendyol.checkout.dto.AddItemDTO;
+import com.trendyol.checkout.dto.AddVasItemDTO;
 import com.trendyol.checkout.entity.DefaultItem;
 import com.trendyol.checkout.entity.DigitalItem;
 import com.trendyol.checkout.entity.Item;
+import com.trendyol.checkout.entity.VasItem;
+
+import java.util.List;
+import java.util.stream.Collectors;
 
 public class ItemMapper {
 
@@ -33,6 +38,15 @@ public class ItemMapper {
         addItemDTO.setSellerId(item.getSellerId());
         addItemDTO.setPrice(item.getPrice());
         addItemDTO.setQuantity(item.getQuantity());
+
+        if (item instanceof DefaultItem defaultItem) {
+            if (defaultItem.getVasItems() != null && !defaultItem.getVasItems().isEmpty()) {
+                List<AddVasItemDTO> vasItemDTOs = defaultItem.getVasItems().stream()
+                        .map(VasItemMapper::vasItemToDto)
+                        .collect(Collectors.toList());
+                addItemDTO.setVasItems(vasItemDTOs);
+            }
+        }
 
         return addItemDTO;
     }

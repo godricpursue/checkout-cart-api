@@ -15,7 +15,7 @@ public class VasItemMapper {
         return vasItem;
     }
 
-    public AddVasItemDTO vasItemToDto(VasItem vasItem) {
+    public static AddVasItemDTO vasItemToDto(VasItem vasItem) {
         AddVasItemDTO vasItemDTO = new AddVasItemDTO();
         vasItemDTO.setVasItemId(vasItem.getVasItemId());
         vasItemDTO.setCategoryId(vasItem.getCategoryId());

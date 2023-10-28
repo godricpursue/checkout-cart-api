@@ -1,9 +1,6 @@
 package com.trendyol.checkout.controller;
 
-import com.trendyol.checkout.dto.AddItemDTO;
-import com.trendyol.checkout.dto.AddVasItemDTO;
-import com.trendyol.checkout.dto.RemoveItemDTO;
-import com.trendyol.checkout.dto.ResponseDTO;
+import com.trendyol.checkout.dto.*;
 import com.trendyol.checkout.service.CheckoutCartService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
@@ -38,5 +35,10 @@ public class CheckoutCartController {
     @PostMapping("/reset")
     public ResponseDTO resetCart() {
         return checkoutCartService.resetCart();
+    }
+
+    @GetMapping("/display")
+    public CartResponseDTO displayCart() {
+        return checkoutCartService.displayCart();
     }
 }

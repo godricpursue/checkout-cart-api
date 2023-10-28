@@ -15,7 +15,7 @@ import java.util.List;
 @AllArgsConstructor
 @NoArgsConstructor
 public class DefaultItem extends Item {
-    @OneToMany(mappedBy = "defaultItem", cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "defaultItem", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
     private List<VasItem> vasItems = new ArrayList<>();
 
     public static final int VAS_ITEM_SPACE_LIMIT = 3;
