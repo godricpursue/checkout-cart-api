@@ -5,6 +5,7 @@ import com.trendyol.checkout.dto.AddVasItemDTO;
 import com.trendyol.checkout.dto.ResponseDTO;
 import com.trendyol.checkout.entity.*;
 import com.trendyol.checkout.mapper.ItemMapper;
+import com.trendyol.checkout.mapper.VasItemMapper;
 import com.trendyol.checkout.model.Promotion;
 import com.trendyol.checkout.repository.CheckoutCartRepository;
 import com.trendyol.checkout.repository.ItemRepository;
@@ -12,9 +13,6 @@ import com.trendyol.checkout.repository.VasItemRepository;
 import com.trendyol.checkout.service.CheckoutCartService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-
-import java.util.Arrays;
-import java.util.Optional;
 
 @Service
 public class CheckoutCartServiceImpl implements CheckoutCartService {
@@ -31,7 +29,7 @@ public class CheckoutCartServiceImpl implements CheckoutCartService {
     }
 
     public ResponseDTO addItem(AddItemDTO itemDTO) {
-        CheckoutCart checkoutCart = getCheckoutCart();
+        CheckoutCart checkoutCart = getCheckoutCart(true);
         ResponseDTO validationResult = validateCartConstraints(checkoutCart, itemDTO);
 
         if (validationResult != null) {
@@ -59,13 +57,14 @@ public class CheckoutCartServiceImpl implements CheckoutCartService {
         }
 
         Item item = ItemMapper.dtoToItem(itemDTO);
-        updateCheckoutCartWithNewItem(checkoutCart, item);
+        item.setCheckoutCart(checkoutCart);
+        checkoutCart.getItems().add(item);
+        updateCheckoutCartWithNewItem(checkoutCart);
 
         return new ResponseDTO(ResponseDTO.SUCCESS, CheckoutCart.SUCCESS_MESSAGE);
     }
-
     public ResponseDTO addVasItem(AddVasItemDTO vasItemDTO) {
-        CheckoutCart checkoutCart = checkoutCartRepository.findById(CheckoutCart.CART_REFERANCE).orElse(null);
+        CheckoutCart checkoutCart = getCheckoutCart(false);
         if (checkoutCart == null) {
             return new ResponseDTO(ResponseDTO.FAILED, CheckoutCart.CART_NOT_FOUND_ERROR_MESSAGE);
         }
@@ -74,65 +73,77 @@ public class CheckoutCartServiceImpl implements CheckoutCartService {
             return new ResponseDTO(ResponseDTO.FAILED, VasItem.NO_ITEMS_IN_THE_CART_TO_ATTACH_A_VAS_ITEM_MESSAGE);
         }
 
-        Optional<Item> optionalDefaultItem = checkoutCart.getItems().stream()
-                .filter(i -> i.getItemId().equals(vasItemDTO.getItemId()))
-                .findFirst();
-
-        if (optionalDefaultItem.isEmpty()) {
+        DefaultItem defaultItem = fetchDefaultItemFromCart(checkoutCart, vasItemDTO.getItemId());
+        if (defaultItem == null) {
             return new ResponseDTO(ResponseDTO.FAILED, DefaultItem.DEFAULT_ITEM_NOT_FOUND_MESSAGE);
         }
 
-        DefaultItem defaultItem = (DefaultItem) optionalDefaultItem.get();
-
-        if (!VasItem.applicableCategories.contains(defaultItem.getCategoryId())) {
+        if (!isVasItemApplicableToDefaultItem(defaultItem)) {
             return new ResponseDTO(ResponseDTO.FAILED, VasItem.VAS_ITEM_CATEGORY_ERROR_MESSAGE);
         }
-
-        if (defaultItem.getVasItems().size() >= 3) {
+        if (hasNoVasItemSpace(defaultItem)) {
             return new ResponseDTO(ResponseDTO.FAILED, DefaultItem.EXCEEDED_VASITEM_MESSAGE);
         }
+        VasItem vasItem = createVasItemFromDTO(vasItemDTO, defaultItem);
+        if(!isValidVasItem(vasItem, defaultItem)) {
+            return new ResponseDTO(ResponseDTO.FAILED, VasItem.INVALID_VAS_ITEM_DETAILS_MESSAGE);
+        }
+        defaultItem.getVasItems().add(vasItem);
+        updateCheckoutCartWithNewItem(checkoutCart);
+        return new ResponseDTO(ResponseDTO.SUCCESS, VasItem.SUCCESS_MESSAGE);
+    }
 
-        VasItem vasItem = new VasItem();
-        vasItem.setItemId(vasItemDTO.getItemId());
-        vasItem.setVasItemId(vasItemDTO.getVasItemId());
-        vasItem.setCategoryId(vasItemDTO.getCategoryId());
-        vasItem.setSellerId(vasItemDTO.getSellerId());
-        vasItem.setPrice(vasItemDTO.getPrice());
-        vasItem.setQuantity(vasItemDTO.getQuantity());
+
+
+
+    // AddVasItem method helper methods
+    private DefaultItem fetchDefaultItemFromCart(CheckoutCart checkoutCart, int itemId) {
+        return (DefaultItem) checkoutCart.getItems().stream()
+                .filter(i -> i.getItemId().equals(itemId))
+                .findFirst()
+                .orElse(null);
+    }
+    private boolean isVasItemApplicableToDefaultItem(DefaultItem defaultItem) {
+        return VasItem.applicableCategories.contains(defaultItem.getCategoryId());
+    }
+    private boolean hasNoVasItemSpace(DefaultItem defaultItem) {
+        return defaultItem.getVasItems().size() >= DefaultItem.VAS_ITEM_SPACE_LIMIT;
+    }
+    private VasItem createVasItemFromDTO(AddVasItemDTO vasItemDTO, DefaultItem defaultItem) {
+        VasItem vasItem = VasItemMapper.dtoToVasItem(vasItemDTO);
 
         vasItem.setDefaultItem(defaultItem);
         vasItem.setCheckoutCart(defaultItem.getCheckoutCart());
 
-        if (vasItem.getCategoryId() != 3242 || vasItem.getSellerId() != 5003) {
-            return new ResponseDTO(ResponseDTO.FAILED, VasItem.INVALID_VAS_ITEM_DETAILS_MESSAGE);
-        }
-        if (vasItem.getPrice() > defaultItem.getPrice()) {
-            return new ResponseDTO(ResponseDTO.FAILED, VasItem.VAS_ITEM_PRICE_HIGHER_THAN_DEFAULT_ITEM_PRICE_MESSAGE);
-        }
-
-        defaultItem.getVasItems().add(vasItem);
-
-        checkoutCartRepository.save(checkoutCart);
-
-        return new ResponseDTO(ResponseDTO.SUCCESS, VasItem.SUCCESS_MESSAGE);
+        return vasItem;
+    }
+    private boolean isValidVasItem(VasItem vasItem, DefaultItem defaultItem) {
+        return vasItem.getCategoryId() == VasItem.VAS_ITEM_CATEGORY_ID
+                && vasItem.getSellerId() == VasItem.VAS_ITEM_SELLER_ID
+                && vasItem.getPrice() <= defaultItem.getPrice();
     }
 
-    private void updateCheckoutCartWithNewItem(CheckoutCart checkoutCart, Item item) {
-        item.setCheckoutCart(checkoutCart);
-        checkoutCart.getItems().add(item);
+
+
+    // AddItem method helper methods
+    private void updateCheckoutCartWithNewItem(CheckoutCart checkoutCart) {
+
+        double totalPrice = CheckoutCart.getTotalCartValue(checkoutCart);
+        checkoutCart.setTotalPrice(totalPrice);
 
         Promotion appliedPromotion = Promotion.applyPromotion(checkoutCart);
         checkoutCart.setAppliedPromotionId(appliedPromotion.getPromotionId());
         checkoutCart.setTotalDiscount(appliedPromotion.getDiscount());
 
-        double newTotalPrice = checkoutCart.getTotalPrice() + item.getPrice() * item.getQuantity() - appliedPromotion.getDiscount();
+        double newTotalPrice = CheckoutCart.getTotalCartValue(checkoutCart) - appliedPromotion.getDiscount();
+
         checkoutCart.setTotalPrice(newTotalPrice);
 
         checkoutCartRepository.save(checkoutCart);
     }
-    private CheckoutCart getCheckoutCart() {
+    private CheckoutCart getCheckoutCart(boolean createIfNotFound) {
         return checkoutCartRepository.findById(CheckoutCart.CART_REFERANCE)
-                .orElse(new CheckoutCart());
+                .orElse(createIfNotFound ? new CheckoutCart() : null);
     }
     private ResponseDTO validateCartConstraints(CheckoutCart checkoutCart, AddItemDTO itemDTO) {
         if (isCartOverValueLimit(checkoutCart, itemDTO)) {

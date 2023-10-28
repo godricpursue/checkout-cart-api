@@ -5,7 +5,7 @@ import com.trendyol.checkout.entity.VasItem;
 
 public class VasItemMapper {
 
-    public VasItem dtoToVasItem(AddVasItemDTO vasItemDTO) {
+    public static VasItem dtoToVasItem(AddVasItemDTO vasItemDTO) {
         VasItem vasItem = new VasItem();
         vasItem.setVasItemId(vasItemDTO.getVasItemId());
         vasItem.setCategoryId(vasItemDTO.getCategoryId());

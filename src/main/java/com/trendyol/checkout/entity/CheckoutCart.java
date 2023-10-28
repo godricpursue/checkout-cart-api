@@ -35,4 +35,27 @@ public class CheckoutCart {
 
     public static final String CART_NOT_FOUND_ERROR_MESSAGE = "Cart not found.";
 
+    public static double getTotalCartValue(CheckoutCart checkoutCart) {
+        double totalValue = 0.0;
+        if (checkoutCart == null) {
+            return totalValue;
+        }
+
+
+
+        for (Item item : checkoutCart.getItems()) {
+            totalValue += item.getPrice() * item.getQuantity();
+
+            if (item instanceof DefaultItem defaultItem) {
+                if (VasItem.applicableCategories.contains(defaultItem.getCategoryId())) {
+                    for (VasItem vasItem : defaultItem.getVasItems()) {
+                        totalValue += vasItem.getPrice() * vasItem.getQuantity();
+                    }
+                }
+            }
+        }
+
+        return totalValue;
+    }
+
 }

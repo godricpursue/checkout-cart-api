@@ -261,6 +261,7 @@ class CheckoutCartServiceImplAddVasItemTest {
         assertEquals(ResponseDTO.FAILED, response.isResult());
         assertEquals(VasItem.NO_ITEMS_IN_THE_CART_TO_ATTACH_A_VAS_ITEM_MESSAGE, response.getMessage());
     }
+
     @Test
     public void testAddVasItem_PriceHigherThanDefaultItem() {
         when(checkoutCartRepository.findById(anyString())).thenReturn(Optional.of(checkoutCart));
@@ -269,7 +270,7 @@ class CheckoutCartServiceImplAddVasItemTest {
         ResponseDTO response = checkoutCartService.addVasItem(vasItemDTO);
 
         assertEquals(ResponseDTO.FAILED, response.isResult());
-        assertEquals(VasItem.VAS_ITEM_PRICE_HIGHER_THAN_DEFAULT_ITEM_PRICE_MESSAGE, response.getMessage());
+        assertEquals(VasItem.INVALID_VAS_ITEM_DETAILS_MESSAGE, response.getMessage());
     }
     @Test
     public void testAddVasItem_InvalidVasItem() {

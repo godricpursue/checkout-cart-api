@@ -33,13 +33,15 @@ public class Promotion {
         }
 
 
-        if (checkoutCart.getItems().stream().anyMatch(item -> item.getCategoryId() == 3003L)) {
+        if (checkoutCart.getItems().stream().anyMatch(item -> item.getCategoryId() == 3003)) {
             applicablePromotions.add(new Promotion(CATEGORY_PROMOTION_ID, 0.05 * checkoutCart.getTotalPrice()));
         }
 
-        // Check for TotalPricePromotion
+
         double totalValue = checkoutCart.getTotalPrice();
-        if (totalValue < 5000) {
+        if(totalValue < 250){
+            applicablePromotions.add(new Promotion(TOTAL_PRICE_PROMOTION_ID, 0.0));
+        } else if (totalValue < 5000) {
             applicablePromotions.add(new Promotion(TOTAL_PRICE_PROMOTION_ID, 250.0));
         } else if (totalValue < 10000) {
             applicablePromotions.add(new Promotion(TOTAL_PRICE_PROMOTION_ID, 500.0));
