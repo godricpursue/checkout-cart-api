@@ -41,10 +41,24 @@ class CheckoutCartServiceImplTest {
     }
 
     @Test
-    public void testAddItem_Success() {
+    public void testAddItem_DefaultItemSuccess() {
         AddItemDTO itemDTO = new AddItemDTO();
         itemDTO.setItemId(10);
         itemDTO.setCategoryId(3738);
+        itemDTO.setSellerId(2326);
+        itemDTO.setPrice(260);
+        itemDTO.setQuantity(3);
+
+        ResponseDTO response = checkoutCartService.addItem(itemDTO);
+
+        assertEquals(ResponseDTO.SUCCESS, response.isResult());
+        assertEquals(CheckoutCart.SUCCESS_MESSAGE, response.getMessage());
+    }
+    @Test
+    public void testAddItem_DigitalItemSuccess() {
+        AddItemDTO itemDTO = new AddItemDTO();
+        itemDTO.setItemId(10);
+        itemDTO.setCategoryId(DigitalItem.DIGITAL_ITEM_CATEGORY_ID);
         itemDTO.setSellerId(2326);
         itemDTO.setPrice(260);
         itemDTO.setQuantity(3);
