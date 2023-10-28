@@ -358,5 +358,57 @@ class CheckoutCartServiceImplRemoveItemTest {
         assertEquals(Item.ITEM_NOT_FOUND_MESSAGE, response.getMessage());
     }
 }
+class CheckoutCartServiceImplResetCartTest{
+@InjectMocks
+    private CheckoutCartServiceImpl checkoutCartService;
 
+    @Mock
+    private CheckoutCartRepository checkoutCartRepository;
+
+    @Mock
+    private ItemRepository itemRepository;
+
+    @BeforeEach
+    public void setup() {
+        MockitoAnnotations.openMocks(this);
+        CheckoutCart checkoutCart = new CheckoutCart();
+    }
+
+    @Test
+    public void testResetCart_SuccessfulReset() {
+        CheckoutCart checkoutCart = new CheckoutCart();
+        List<Item> mockItems = createMockItems(0, 5,2);
+        checkoutCart.setItems(mockItems);
+
+        when(checkoutCartRepository.findById(CheckoutCart.CART_REFERANCE)).thenReturn(Optional.of(checkoutCart));
+        when(checkoutCartRepository.save(any(CheckoutCart.class))).thenReturn(checkoutCart);
+
+        ResponseDTO response = checkoutCartService.resetCart();
+
+        assertEquals(ResponseDTO.SUCCESS, response.isResult());
+        assertEquals(CheckoutCart.RESET_SUCCESS_MESSAGE, response.getMessage());
+    }
+    @Test
+    public void testResetCart_NoCart() {
+        Mockito.when(checkoutCartRepository.findOne(Mockito.any())).thenReturn(null);
+
+        ResponseDTO response = checkoutCartService.resetCart();
+
+        assertEquals(ResponseDTO.FAILED, response.isResult());
+        assertEquals(CheckoutCart.CART_NOT_FOUND_ERROR_MESSAGE, response.getMessage());
+    }
+    private List<Item> createMockItems(int range, int count, int quantity){
+        return IntStream.range(range, count)
+                .mapToObj(i -> {
+                    Item item = new DefaultItem();
+                    item.setItemId(i + 1);
+                    item.setCategoryId(i + 3738);
+                    item.setSellerId(i + 2326);
+                    item.setPrice(i*10 + 260);
+                    item.setQuantity(quantity);
+                    return item;
+                })
+                .collect(Collectors.toList());
+    }
+}
 
