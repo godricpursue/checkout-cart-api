@@ -37,6 +37,8 @@ public class CheckoutCart {
 
     public static final String REMOVAL_SUCCESS_MESSAGE = "Item removed from cart.";
 
+    public static final String RESET_SUCCESS_MESSAGE = "Cart reset successfully.";
+
     public static double getTotalCartValue(CheckoutCart checkoutCart) {
         double totalValue = 0.0;
         if (checkoutCart == null) {

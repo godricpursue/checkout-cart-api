@@ -15,6 +15,9 @@ import com.trendyol.checkout.service.CheckoutCartService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
+import java.util.List;
+
 @Service
 public class CheckoutCartServiceImpl implements CheckoutCartService {
 
@@ -110,6 +113,22 @@ public class CheckoutCartServiceImpl implements CheckoutCartService {
         itemRepository.delete(item);
         updateCheckoutCartWithNewItem(checkoutCart);
         return new ResponseDTO(ResponseDTO.SUCCESS, CheckoutCart.REMOVAL_SUCCESS_MESSAGE);
+    }
+    @Override
+    public ResponseDTO resetCart() {
+        CheckoutCart checkoutCart = getCheckoutCart(false);
+        if (checkoutCart == null) {
+            return new ResponseDTO(ResponseDTO.FAILED, CheckoutCart.CART_NOT_FOUND_ERROR_MESSAGE);
+        }
+
+        List<Item> itemsToRemove = new ArrayList<>(checkoutCart.getItems());
+
+        checkoutCart.getItems().clear();
+        updateCheckoutCartWithNewItem(checkoutCart);
+
+        itemRepository.deleteAll(itemsToRemove);
+
+        return new ResponseDTO(ResponseDTO.SUCCESS, CheckoutCart.RESET_SUCCESS_MESSAGE);
     }
 
 

@@ -34,4 +34,9 @@ public class CheckoutCartController {
         removeItemDTO.setItemId(itemId);
         return checkoutCartService.removeItem(removeItemDTO);
     }
+
+    @PostMapping("/reset")
+    public ResponseDTO resetCart() {
+        return checkoutCartService.resetCart();
+    }
 }
