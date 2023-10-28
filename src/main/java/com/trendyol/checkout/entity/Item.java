@@ -18,4 +18,5 @@ public abstract class Item {
     private CheckoutCart checkoutCart;
     public static final int ITEM_QUANTITY_PER_INPUT = 10;
     public static final String QUANTITY_ERROR_PER_INPUT_MESSAGE = "Item quantity exceeds limit.";
+    public static final String ITEM_NOT_FOUND_MESSAGE = "Item not found.";
 }

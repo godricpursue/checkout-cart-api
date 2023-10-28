@@ -35,6 +35,8 @@ public class CheckoutCart {
 
     public static final String CART_NOT_FOUND_ERROR_MESSAGE = "Cart not found.";
 
+    public static final String REMOVAL_SUCCESS_MESSAGE = "Item removed from cart.";
+
     public static double getTotalCartValue(CheckoutCart checkoutCart) {
         double totalValue = 0.0;
         if (checkoutCart == null) {

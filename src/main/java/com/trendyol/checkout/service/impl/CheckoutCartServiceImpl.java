@@ -2,6 +2,7 @@ package com.trendyol.checkout.service.impl;
 
 import com.trendyol.checkout.dto.AddItemDTO;
 import com.trendyol.checkout.dto.AddVasItemDTO;
+import com.trendyol.checkout.dto.RemoveItemDTO;
 import com.trendyol.checkout.dto.ResponseDTO;
 import com.trendyol.checkout.entity.*;
 import com.trendyol.checkout.mapper.ItemMapper;
@@ -27,7 +28,7 @@ public class CheckoutCartServiceImpl implements CheckoutCartService {
         this.itemRepository = itemRepository;
         this.vasItemRepository = vasItemRepository;
     }
-
+    @Override
     public ResponseDTO addItem(AddItemDTO itemDTO) {
         CheckoutCart checkoutCart = getCheckoutCart(true);
         ResponseDTO validationResult = validateCartConstraints(checkoutCart, itemDTO);
@@ -63,6 +64,7 @@ public class CheckoutCartServiceImpl implements CheckoutCartService {
 
         return new ResponseDTO(ResponseDTO.SUCCESS, CheckoutCart.SUCCESS_MESSAGE);
     }
+    @Override
     public ResponseDTO addVasItem(AddVasItemDTO vasItemDTO) {
         CheckoutCart checkoutCart = getCheckoutCart(false);
         if (checkoutCart == null) {
@@ -92,16 +94,40 @@ public class CheckoutCartServiceImpl implements CheckoutCartService {
         updateCheckoutCartWithNewItem(checkoutCart);
         return new ResponseDTO(ResponseDTO.SUCCESS, VasItem.SUCCESS_MESSAGE);
     }
+    @Override
+    public ResponseDTO removeItem(RemoveItemDTO removeItemDTO) {
+        CheckoutCart checkoutCart = getCheckoutCart(false);
+        if (checkoutCart == null) {
+            return new ResponseDTO(ResponseDTO.FAILED, CheckoutCart.CART_NOT_FOUND_ERROR_MESSAGE);
+        }
 
+        Item item = fetchItemFromCart(checkoutCart, removeItemDTO.getItemId());
 
+        if (item == null) {
+            return new ResponseDTO(ResponseDTO.FAILED, Item.ITEM_NOT_FOUND_MESSAGE);
+        }
 
+        checkoutCart.getItems().remove(item);
+        itemRepository.delete(item);
+        updateCheckoutCartWithNewItem(checkoutCart);
+        return new ResponseDTO(ResponseDTO.SUCCESS, CheckoutCart.REMOVAL_SUCCESS_MESSAGE);
+    }
 
-    // AddVasItem method helper methods
-    private DefaultItem fetchDefaultItemFromCart(CheckoutCart checkoutCart, int itemId) {
-        return (DefaultItem) checkoutCart.getItems().stream()
+    // RemoveItem method helper methods
+    private Item fetchItemFromCart(CheckoutCart checkoutCart, int itemId) {
+        return checkoutCart.getItems().stream()
                 .filter(i -> i.getItemId().equals(itemId))
                 .findFirst()
                 .orElse(null);
+    }
+
+    // VasItem method helper methods
+    private DefaultItem fetchDefaultItemFromCart(CheckoutCart checkoutCart, int itemId) {
+        Item item = fetchItemFromCart(checkoutCart, itemId);
+        if (item instanceof DefaultItem) {
+            return (DefaultItem) item;
+        }
+        return null;
     }
     private boolean isVasItemApplicableToDefaultItem(DefaultItem defaultItem) {
         return VasItem.applicableCategories.contains(defaultItem.getCategoryId());
