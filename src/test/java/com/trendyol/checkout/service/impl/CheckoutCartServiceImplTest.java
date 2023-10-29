@@ -1,9 +1,6 @@
 package com.trendyol.checkout.service.impl;
 
-import com.trendyol.checkout.dto.AddItemDTO;
-import com.trendyol.checkout.dto.AddVasItemDTO;
-import com.trendyol.checkout.dto.RemoveItemDTO;
-import com.trendyol.checkout.dto.ResponseDTO;
+import com.trendyol.checkout.dto.*;
 import com.trendyol.checkout.entity.*;
 import com.trendyol.checkout.mapper.ItemMapper;
 import com.trendyol.checkout.repository.CheckoutCartRepository;
@@ -422,6 +419,42 @@ class CheckoutCartServiceImplResetCartTest{
                     return item;
                 })
                 .collect(Collectors.toList());
+    }
+}
+class CheckoutCartServiceImplDisplayCartTest{
+    @InjectMocks
+    private CheckoutCartServiceImpl checkoutCartService;
+
+    @Mock
+    private CheckoutCartRepository checkoutCartRepository;
+
+    @Mock
+    private ItemRepository itemRepository;
+
+    CheckoutCart checkoutCart;
+
+    @BeforeEach
+    public void setup() {
+        MockitoAnnotations.openMocks(this);
+        checkoutCart = new CheckoutCart();
+    }
+    @Test
+    public void testDisplayCart_Success(){
+        when(checkoutCartRepository.findById(CheckoutCart.CART_REFERANCE)).thenReturn(Optional.of(checkoutCart));
+
+        CartResponseDTO response = checkoutCartService.displayCart();
+
+        assertEquals(ResponseDTO.SUCCESS, response.isResult());
+        assertNotNull(response.getCartDetails());
+    }
+    @Test
+    public void testDisplayCart_NoCart() {
+        Mockito.when(checkoutCartRepository.findOne(Mockito.any())).thenReturn(null);
+
+        CartResponseDTO response = checkoutCartService.displayCart();
+
+        assertEquals(ResponseDTO.FAILED, response.isResult());
+        assertEquals(null, response.getCartDetails());
     }
 }
 
