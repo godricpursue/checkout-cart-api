@@ -91,6 +91,11 @@ public class CheckoutCartServiceImpl implements CheckoutCartService {
         if(!isValidVasItem(vasItem, defaultItem)) {
             return new ResponseDTO(ResponseDTO.FAILED, VasItem.INVALID_VAS_ITEM_DETAILS_MESSAGE);
         }
+
+        if (isQuantityInvalidForVasItem(vasItem)) {
+            return new ResponseDTO(ResponseDTO.FAILED, Item.QUANTITY_ERROR_PER_INPUT_MESSAGE);
+        }
+
         defaultItem.getVasItems().add(vasItem);
         updateCheckoutCartWithNewItem(checkoutCart);
         return new ResponseDTO(ResponseDTO.SUCCESS, VasItem.SUCCESS_MESSAGE);
@@ -175,6 +180,9 @@ public class CheckoutCartServiceImpl implements CheckoutCartService {
         return vasItem.getCategoryId() == VasItem.VAS_ITEM_CATEGORY_ID
                 && vasItem.getSellerId() == VasItem.VAS_ITEM_SELLER_ID
                 && vasItem.getPrice() <= defaultItem.getPrice();
+    }
+    private boolean isQuantityInvalidForVasItem(VasItem vasItem) {
+        return vasItem.getQuantity() > Item.ITEM_QUANTITY_PER_INPUT;
     }
 
 

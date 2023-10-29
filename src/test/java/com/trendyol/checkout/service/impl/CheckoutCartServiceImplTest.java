@@ -48,7 +48,7 @@ class CheckoutCartServiceImplAddItemTest {
 
     @Test
     public void testAddItem_DefaultItemSuccess() {
-        AddItemDTO itemDTO = new AddItemDTO(10, 3738, 2326, 260, 3);
+        AddItemDTO itemDTO = new AddItemDTO(10, 3738, 2326, 260, 3,null);
 
         ResponseDTO response = checkoutCartService.addItem(itemDTO);
 
@@ -57,7 +57,7 @@ class CheckoutCartServiceImplAddItemTest {
     }
     @Test
     public void testAddItem_DigitalItemSuccess() {
-        AddItemDTO itemDTO = new AddItemDTO(10, DigitalItem.DIGITAL_ITEM_CATEGORY_ID, 2326, 260, 3);
+        AddItemDTO itemDTO = new AddItemDTO(10, DigitalItem.DIGITAL_ITEM_CATEGORY_ID, 2326, 260, 3,null);
 
         ResponseDTO response = checkoutCartService.addItem(itemDTO);
 
@@ -67,7 +67,7 @@ class CheckoutCartServiceImplAddItemTest {
     @Test
     public void testAddItem_MaxCartValueExceeded() {
 
-        AddItemDTO itemDTO = new AddItemDTO(12, 3738, 2326, 500001, 2);
+        AddItemDTO itemDTO = new AddItemDTO(12, 3738, 2326, 500001, 2,null);
 
         ResponseDTO response = checkoutCartService.addItem(itemDTO);
 
@@ -84,7 +84,7 @@ class CheckoutCartServiceImplAddItemTest {
         when(checkoutCartRepository.findById(CheckoutCart.CART_REFERANCE)).thenReturn(Optional.of(checkoutCart));
         when(checkoutCartRepository.save(any(CheckoutCart.class))).thenReturn(checkoutCart);
 
-        AddItemDTO itemDTO = new AddItemDTO(12, 5623, 1289, 300, 2);
+        AddItemDTO itemDTO = new AddItemDTO(12, 5623, 1289, 300, 2,null);
         ResponseDTO response = checkoutCartService.addItem(itemDTO);
 
         assertEquals(ResponseDTO.FAILED, response.isResult());
@@ -100,7 +100,7 @@ class CheckoutCartServiceImplAddItemTest {
         when(checkoutCartRepository.findById(CheckoutCart.CART_REFERANCE)).thenReturn(Optional.of(checkoutCart));
         when(checkoutCartRepository.save(any(CheckoutCart.class))).thenReturn(checkoutCart);
 
-        AddItemDTO itemDTO = new AddItemDTO(12, 5623, 1289, 300, 5);
+        AddItemDTO itemDTO = new AddItemDTO(12, 5623, 1289, 300, 5,null);
         ResponseDTO response = checkoutCartService.addItem(itemDTO);
 
         assertEquals(ResponseDTO.FAILED, response.isResult());
@@ -112,7 +112,7 @@ class CheckoutCartServiceImplAddItemTest {
         when(checkoutCartRepository.findById(CheckoutCart.CART_REFERANCE)).thenReturn(Optional.of(checkoutCart));
         when(checkoutCartRepository.save(any(CheckoutCart.class))).thenReturn(checkoutCart);
 
-        AddItemDTO itemDTO = new AddItemDTO(12, 5623, 5003, 300, 5);
+        AddItemDTO itemDTO = new AddItemDTO(12, 5623, 5003, 300, 5,null);
         ResponseDTO response = checkoutCartService.addItem(itemDTO);
 
         assertEquals(ResponseDTO.FAILED, response.isResult());
@@ -121,14 +121,14 @@ class CheckoutCartServiceImplAddItemTest {
     @Test
     public void testAddItem_DigitalCartHasDefaultItem() {
         CheckoutCart checkoutCart = new CheckoutCart();
-        AddItemDTO mockItemDTO = new AddItemDTO(12, 5623, 1289, 300, 5);
+        AddItemDTO mockItemDTO = new AddItemDTO(12, 5623, 1289, 300, 5,null);
         Item mockItem = ItemMapper.dtoToItem(mockItemDTO);
         checkoutCart.getItems().add(mockItem);
 
         when(checkoutCartRepository.findById(CheckoutCart.CART_REFERANCE)).thenReturn(Optional.of(checkoutCart));
         when(checkoutCartRepository.save(any(CheckoutCart.class))).thenReturn(checkoutCart);
 
-        AddItemDTO itemDTO = new AddItemDTO(12, DigitalItem.DIGITAL_ITEM_CATEGORY_ID, 1289, 300, 2);
+        AddItemDTO itemDTO = new AddItemDTO(12, DigitalItem.DIGITAL_ITEM_CATEGORY_ID, 1289, 300, 2,null);
         ResponseDTO response = checkoutCartService.addItem(itemDTO);
 
         assertEquals(ResponseDTO.FAILED, response.isResult());
@@ -140,7 +140,7 @@ class CheckoutCartServiceImplAddItemTest {
         when(checkoutCartRepository.findById(CheckoutCart.CART_REFERANCE)).thenReturn(Optional.of(checkoutCart));
         when(checkoutCartRepository.save(any(CheckoutCart.class))).thenReturn(checkoutCart);
 
-        AddItemDTO itemDTO = new AddItemDTO(12, DigitalItem.DIGITAL_ITEM_CATEGORY_ID, 1289, 300, DigitalItem.DIGITAL_ITEM_QUANTITY_PER_INPUT + 1);
+        AddItemDTO itemDTO = new AddItemDTO(12, DigitalItem.DIGITAL_ITEM_CATEGORY_ID, 1289, 300, DigitalItem.DIGITAL_ITEM_QUANTITY_PER_INPUT + 1,null);
         ResponseDTO response = checkoutCartService.addItem(itemDTO);
 
         assertEquals(ResponseDTO.FAILED, response.isResult());
@@ -149,14 +149,14 @@ class CheckoutCartServiceImplAddItemTest {
     @Test
     public void testAddItem_DefaultCartHasDigitalItem() {
         CheckoutCart checkoutCart = new CheckoutCart();
-        AddItemDTO mockItemDTO = new AddItemDTO(12, DigitalItem.DIGITAL_ITEM_CATEGORY_ID, 1289, 300, 5);
+        AddItemDTO mockItemDTO = new AddItemDTO(12, DigitalItem.DIGITAL_ITEM_CATEGORY_ID, 1289, 300, 5,null);
         Item mockItem = ItemMapper.dtoToItem(mockItemDTO);
         checkoutCart.getItems().add(mockItem);
 
         when(checkoutCartRepository.findById(CheckoutCart.CART_REFERANCE)).thenReturn(Optional.of(checkoutCart));
         when(checkoutCartRepository.save(any(CheckoutCart.class))).thenReturn(checkoutCart);
 
-        AddItemDTO itemDTO = new AddItemDTO(12, 6723, 1289, 300, 2);
+        AddItemDTO itemDTO = new AddItemDTO(12, 6723, 1289, 300, 2,null);
         ResponseDTO response = checkoutCartService.addItem(itemDTO);
 
         assertEquals(ResponseDTO.FAILED, response.isResult());
@@ -168,7 +168,7 @@ class CheckoutCartServiceImplAddItemTest {
         when(checkoutCartRepository.findById(CheckoutCart.CART_REFERANCE)).thenReturn(Optional.of(checkoutCart));
         when(checkoutCartRepository.save(any(CheckoutCart.class))).thenReturn(checkoutCart);
 
-        AddItemDTO itemDTO = new AddItemDTO(12, 4672, 1289, 300, Item.ITEM_QUANTITY_PER_INPUT + 1);
+        AddItemDTO itemDTO = new AddItemDTO(12, 4672, 1289, 300, Item.ITEM_QUANTITY_PER_INPUT + 1,null);
         ResponseDTO response = checkoutCartService.addItem(itemDTO);
 
         assertEquals(ResponseDTO.FAILED, response.isResult());
@@ -205,7 +205,7 @@ class CheckoutCartServiceImplAddVasItemTest {
         MockitoAnnotations.openMocks(this);
 
         checkoutCart = new CheckoutCart();
-        AddItemDTO defaultItemDto = new AddItemDTO(10, 1001, 2020, 300, 1);
+        AddItemDTO defaultItemDto = new AddItemDTO(10, VasItem.FURNITURE_CATEGORY_ID, 5050, 300, 1,null);
         Item defaultItem = ItemMapper.dtoToItem(defaultItemDto);
         if (defaultItem instanceof DefaultItem) {
             ((DefaultItem) defaultItem).setVasItems(new ArrayList<>());
@@ -278,7 +278,7 @@ class CheckoutCartServiceImplAddVasItemTest {
     @Test
     public void testAddVasItem_InvalidAppliedCategory(){
         when(checkoutCartRepository.findById(anyString())).thenReturn(Optional.of(checkoutCart));
-        AddItemDTO defaultItemDto2 = new AddItemDTO(11, 2002, 5050, 250, 1);
+        AddItemDTO defaultItemDto2 = new AddItemDTO(11, 2002, 5050, 250, 1,null);
         Item defaultItem2 = ItemMapper.dtoToItem(defaultItemDto2);
         checkoutCart.getItems().add(defaultItem2);
 
@@ -303,6 +303,19 @@ class CheckoutCartServiceImplAddVasItemTest {
         assertEquals(ResponseDTO.FAILED, response.isResult());
         assertEquals(DefaultItem.EXCEEDED_VASITEM_MESSAGE, response.getMessage());
     }
+    @Test
+    public void testAddVasItem_MaxValueForCartExceeded(){
+        when(checkoutCartRepository.findById(anyString())).thenReturn(Optional.of(checkoutCart));
+        AddItemDTO defaultItemDto2 = new AddItemDTO(11, VasItem.FURNITURE_CATEGORY_ID, 2789, 250, 1,null);
+        Item defaultItem2 = ItemMapper.dtoToItem(defaultItemDto2);
+        checkoutCart.getItems().add(defaultItem2);
+
+        AddVasItemDTO vasItemDTO = new AddVasItemDTO(11,3030, VasItem.VAS_ITEM_CATEGORY_ID, VasItem.VAS_ITEM_SELLER_ID, 100, 11);
+        ResponseDTO response = checkoutCartService.addVasItem(vasItemDTO);
+
+        assertEquals(ResponseDTO.FAILED, response.isResult());
+        assertEquals(Item.QUANTITY_ERROR_PER_INPUT_MESSAGE, response.getMessage());
+    }
 }
 class CheckoutCartServiceImplRemoveItemTest {
 
@@ -321,7 +334,7 @@ class CheckoutCartServiceImplRemoveItemTest {
     public void setup() {
         MockitoAnnotations.openMocks(this);
         checkoutCart = new CheckoutCart();
-        AddItemDTO defaultItemDto = new AddItemDTO(10, 1001, 2020, 300, 1);
+        AddItemDTO defaultItemDto = new AddItemDTO(10, VasItem.FURNITURE_CATEGORY_ID, 2020, 300, 1,null);
         Item item = ItemMapper.dtoToItem(defaultItemDto);
         checkoutCart.getItems().add(item);
     }
