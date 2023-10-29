@@ -20,7 +20,7 @@ public class VasItem{
     private int quantity;
 
     public static final int FURNITURE_CATEGORY_ID = 1001;
-    private static final int ELECTRONIC_CATEGORY_ID = 3003;
+    private static final int ELECTRONIC_CATEGORY_ID = 3004;
 
     public static List<Integer> applicableCategories = Arrays.asList(FURNITURE_CATEGORY_ID, ELECTRONIC_CATEGORY_ID);
 
