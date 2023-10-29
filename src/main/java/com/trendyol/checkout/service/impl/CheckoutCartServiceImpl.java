@@ -184,7 +184,7 @@ public class CheckoutCartServiceImpl implements CheckoutCartService {
     private boolean isQuantityInvalidForVasItem(VasItem vasItem) {
         return vasItem.getQuantity() > Item.ITEM_QUANTITY_PER_INPUT;
     }
-    
+
     // AddItem method helper methods
     private void updateCheckoutCartWithNewItem(CheckoutCart checkoutCart) {
 
